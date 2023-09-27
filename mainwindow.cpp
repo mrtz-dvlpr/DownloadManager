@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->textEdit->setEnabled(false);
+    ui->progressBar->setValue(0);
 }
 
 MainWindow::~MainWindow()
@@ -46,14 +46,19 @@ void MainWindow::on_pushButton_clicked()
     connect(reply, &QNetworkReply::readyRead,this,[   this]{
            QByteArray data = reply->readAll();
            file->write(data);
+           connect (reply,&QNetworkReply::downloadProgress, this, [this] (qint64 received, qint64 total)
+            {
+                int percent = received * 100 / total;
+                ui->progressBar->setValue (percent);
+            });
     });
+
 
     connect(reply, &QNetworkReply::finished,this,[this]{
         delete file;
         delete manager;
         ui->pushButton->setEnabled(true);
+
     });
-
-
 }
 
